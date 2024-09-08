@@ -1,5 +1,7 @@
 const multer = require("multer");
+const sanitizeHtml = require("sanitize-html");
 const prisma = require("../prismaClient");
+const generateSlug = require("../utils/slugGenerator");
 
 const storage = multer.diskStorage({
   destination: "uploads/articles",
@@ -17,7 +19,7 @@ const handleErrors = (res, error, message) => {
 
 exports.getAllArticles = async (req, res) => {
   try {
-    const articles = await prisma.articles.findMany();
+    const articles = await prisma.article.findMany();
     res.status(200).json({ success: true, data: articles });
   } catch (error) {
     handleErrors(res, error, "Failed to fetch articles");
@@ -37,10 +39,26 @@ exports.createArticle = [
           .json({ success: false, error: "All fields are required" });
       }
 
-      const isoDate = new Date(datetime).toISOString(); // Convert to ISO-8601
+      const sanitizedContent = sanitizeHtml(content, {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
+        allowedAttributes: {
+          "*": ["style", "class"],
+          a: ["href", "name", "target"],
+          img: ["src", "alt"],
+        },
+      });
 
-      const article = await prisma.articles.create({
-        data: { title, content, datetime: isoDate, thumbnail },
+      const isoDate = new Date(datetime).toISOString(); // Convert to ISO-8601
+      const slug = generateSlug(title);
+
+      const article = await prisma.article.create({
+        data: {
+          title,
+          content: sanitizedContent,
+          datetime: isoDate,
+          thumbnail,
+          slug,
+        },
       });
 
       res.status(201).json({
@@ -57,7 +75,7 @@ exports.createArticle = [
 exports.getArticleById = async (req, res) => {
   try {
     const { id } = req.params;
-    const article = await prisma.articles.findUnique({
+    const article = await prisma.article.findUnique({
       where: { id: Number(id) },
     });
 
@@ -79,11 +97,32 @@ exports.updateArticle = [
       const { title, content, date } = req.body;
       const thumbnail = req.file?.path.replace(/\\/g, "/");
 
+      const sanitizedContent = content
+        ? sanitizeHtml(content, {
+            allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
+            allowedAttributes: {
+              "*": ["style", "class"],
+              a: ["href", "name", "target"],
+              img: ["src", "alt"],
+            },
+          })
+        : undefined;
+
       const isoDate = date ? new Date(date).toISOString() : undefined;
 
-      const updatedArticle = await prisma.articles.update({
+      const updatedData = {
+        content: sanitizedContent,
+        datetime: isoDate,
+        thumbnail,
+      };
+      if (title) {
+        updatedData.title = title;
+        updatedData.slug = generateSlug(title);
+      }
+
+      const updatedArticle = await prisma.article.update({
         where: { id: Number(id) },
-        data: { title, content, datetime: isoDate, thumbnail },
+        data: updatedData,
       });
 
       res.status(200).json({
@@ -100,11 +139,28 @@ exports.updateArticle = [
 exports.deleteArticle = async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.articles.delete({ where: { id: Number(id) } });
+    await prisma.article.delete({ where: { id: Number(id) } });
     res
       .status(204)
       .json({ success: true, message: "Article deleted successfully" });
   } catch (error) {
     handleErrors(res, error, "Failed to delete articles");
+  }
+};
+
+exports.getArticleBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const article = await prisma.article.findUnique({
+      where: { slug: slug },
+    });
+
+    if (article) {
+      res.status(200).json({ success: true, data: article });
+    } else {
+      res.status(404).json({ success: false, error: "Article not found" });
+    }
+  } catch (err) {
+    handleErrors(res, err, "Failed to fetch article by slug");
   }
 };

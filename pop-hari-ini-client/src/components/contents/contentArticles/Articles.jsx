@@ -23,7 +23,7 @@ const Articles = ({ articles }) => {
           return (
             <article key={article.id} className="article-item flex flex-col">
               <div className="article-image-container h-64 w-full overflow-hidden rounded-lg">
-                <Link to={`/article/${article.name}`}>
+                <Link to={`/articles/${article.slug}`}>
                   <img
                     src={`/${article.thumbnail}`}
                     alt={article.title}

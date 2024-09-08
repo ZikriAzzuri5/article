@@ -1,4 +1,5 @@
 import React from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogPanel,
@@ -154,8 +155,11 @@ export const Navbar = () => {
           <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
             Marketplace
           </a>
-          <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
-            Company
+          <a
+            href="/categories"
+            className="text-sm font-semibold leading-6 text-gray-900"
+          >
+            Categories
           </a>
         </PopoverGroup>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
@@ -226,10 +230,10 @@ export const Navbar = () => {
                   Marketplace
                 </a>
                 <a
-                  href="#"
+                  href="/categories"
                   className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
                 >
-                  Company
+                  Categories
                 </a>
               </div>
               <div className="py-6">

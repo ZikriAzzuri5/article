@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Articles from "../components/contents/Articles";
+import Articles from "../components/contents/contentArticles/Articles";
 import { getArticles } from "../services/api";
 
 const HomePage = () => {

@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
 import { CkEditor } from "../commons/CkEditor";
+import { createArticle } from "../../services/api";
 
 const schema = yup.object().shape({
   title: yup.string().required("Title is required"),
@@ -29,10 +30,15 @@ export const ArticleForm = () => {
     control,
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
   });
+
+  useEffect(() => {
+    reset();
+  }, [reset]);
 
   const onSubmit = async (data) => {
     const formData = new FormData();
@@ -43,83 +49,15 @@ export const ArticleForm = () => {
       formData.append("thumbnail", data.thumbnail[0]);
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/articles`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await createArticle(formData);
       alert("Articles created successfully");
+      reset();
     } catch (err) {
       console.error("There was an error!", err);
     }
   };
 
   return (
-    // <div className="max-w-4xl mx-auto my-8">
-    //   <form
-    //     onSubmit={handleSubmit(onSubmit)}
-    //     className="bg-white shadow-lg rounded-lg p-8"
-    //   >
-    //     <div className="mb-6">
-    //       <label className="block text-gray-700 font-bold mb-2">
-    //         Thumbnail
-    //       </label>
-    //       <Controller
-    //         name="thumbnail"
-    //         control={control}
-    //         defaultValue=""
-    //         render={({ field: { onChange, onBlur } }) => (
-    //           <input
-    //             type="file"
-    //             accept="image/*"
-    //             onChange={(e) => onChange(e.target.files)}
-    //             onBlur={onBlur}
-    //             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-    //           />
-    //         )}
-    //       />
-
-    //       <p className="text-red-500 text-sm mt-1">
-    //         {errors.thumbnail?.message}
-    //       </p>
-    //     </div>
-
-    //     <div className="mb-6">
-    //       <label className="block text-gray-700 font-bold mb-2">Title</label>
-    //       <input
-    //         type="text"
-    //         {...register("title")}
-    //         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-    //       />
-    //       <p className="text-red-500 text-sm mt-1">{errors.title?.message}</p>
-    //     </div>
-
-    //     <div className="mb-6">
-    //       <label className="block text-gray-700 font-bold mb-2">Content</label>
-    //       <CkEditor name="content" control={control} defaultValue="" />
-    //       <p className="text-red-500 text-sm mt-1">{errors.content?.message}</p>
-    //     </div>
-
-    //     <div className="mb-6">
-    //       <label className="block text-gray-700 font-bold mb-2">Date</label>
-    //       <input
-    //         type="date"
-    //         {...register("datetime")}
-    //         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-    //       />
-    //       <p className="text-red-500 text-sm mt-1">
-    //         {errors.datetime?.message}
-    //       </p>
-    //     </div>
-
-    //     <button
-    //       type="submit"
-    //       className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition duration-300"
-    //     >
-    //       Submit
-    //     </button>
-    //   </form>
-    // </div>
     <div className="max-w-4xl mx-auto my-8 p-6 bg-white shadow-lg rounded-lg">
       <h1 className="text-3xl font-extrabold text-gray-900 mb-8">
         Create New Article
