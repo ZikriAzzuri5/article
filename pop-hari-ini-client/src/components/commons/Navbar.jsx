@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import {
   Dialog,
@@ -65,6 +65,23 @@ const callsToAction = [
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    setIsAuthenticated(false);
+    window.location.href = "/";
+  };
 
   return (
     <header className="bg-white">
@@ -149,8 +166,8 @@ export const Navbar = () => {
             </PopoverPanel>
           </Popover>
 
-          <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
-            Features
+          <a href="/" className="text-sm font-semibold leading-6 text-gray-900">
+            Articles
           </a>
           <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
             Marketplace
@@ -163,9 +180,21 @@ export const Navbar = () => {
           </a>
         </PopoverGroup>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-          <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
-            Log in <span aria-hidden="true">&rarr;</span>
-          </a>
+          {isAuthenticated ? (
+            <button
+              onClick={handleLogout}
+              className="text-sm font-semibold leading-6 text-gray-900"
+            >
+              Logout
+            </button>
+          ) : (
+            <a
+              href="/login"
+              className="text-sm font-semibold leading-6 text-gray-900"
+            >
+              Login
+            </a>
+          )}
         </div>
       </nav>
       <Dialog
@@ -237,12 +266,21 @@ export const Navbar = () => {
                 </a>
               </div>
               <div className="py-6">
-                <a
-                  href="#"
-                  className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                >
-                  Log in
-                </a>
+                {isAuthenticated ? (
+                  <a
+                    href="/login"
+                    className="text-sm font-semibold leading-6 text-gray-900"
+                  >
+                    Login
+                  </a>
+                ) : (
+                  <button
+                    onClick={handleLogout}
+                    className="text-sm font-semibold leading-6 text-gray-900"
+                  >
+                    Logout
+                  </button>
+                )}
               </div>
             </div>
           </div>

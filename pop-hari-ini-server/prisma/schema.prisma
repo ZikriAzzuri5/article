@@ -13,6 +13,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)    // User dihapus, komentar juga dihapus
+  userId    Int
+}
+
 model Article {
   id        Int      @id @default(autoincrement())
   title     String
@@ -20,9 +29,13 @@ model Article {
   datetime  DateTime
   thumbnail String
   slug      String   @unique
-
-  categoryId  Int
+  author   User     @relation(fields: [authorId], references: [id])
+  authorId Int
   category   Category @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  comments Comment[]
+  updatedAt  DateTime  @updatedAt  // Otomatis diperbarui ketika artikel diubah
+
 }
 
 model Category {
@@ -30,5 +43,24 @@ model Category {
   name      String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
   articles  Article[]
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+
+  Comment Comment[]
+
+  Article Article[]
+}
+
+enum Role {
+  ADMIN
+  USER
 }

@@ -34,7 +34,6 @@ exports.getCategoryById = async (req, res) => {
 exports.createCategory = async (req, res) => {
   try {
     const { name } = req.body;
-
     if (!name) {
       return res
         .status(400)
@@ -84,10 +83,14 @@ exports.updateCategory = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.category.delete({ where: { id: Number(id) } });
-    res
-      .status(204)
-      .json({ success: true, message: "Category deleted successfully" });
+    const deletedCategory = await prisma.category.delete({
+      where: { id: Number(id) },
+    });
+    res.status(200).json({
+      success: true,
+      message: "Category deleted successfully",
+      data: deletedCategory,
+    });
   } catch (error) {
     handleErrors(res, error, "Failed to delete category");
   }

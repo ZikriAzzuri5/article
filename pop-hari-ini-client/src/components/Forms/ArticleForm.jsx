@@ -2,9 +2,9 @@ import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import axios from "axios";
 import { CkEditor } from "../commons/CkEditor";
-import { createArticle } from "../../services/api";
+import { createArticle, getCategories } from "../../services/api";
+import { useState } from "react";
 
 const schema = yup.object().shape({
   title: yup.string().required("Title is required"),
@@ -23,9 +23,12 @@ const schema = yup.object().shape({
         ? ["image/jpeg", "image/png"].includes(value[0].type)
         : true;
     }),
+  category: yup.string().required("Category is required"),
 });
 
 export const ArticleForm = () => {
+  const [categories, setCategories] = useState([]);
+
   const {
     control,
     register,
@@ -37,17 +40,34 @@ export const ArticleForm = () => {
   });
 
   useEffect(() => {
-    reset();
-  }, [reset]);
+    const loadCategories = async () => {
+      try {
+        const res = await getCategories();
+        setCategories(res.data.data);
+      } catch (err) {
+        console.error("Failed to fetch categories", err);
+      }
+    };
+    loadCategories();
+  }, []);
 
   const onSubmit = async (data) => {
     const formData = new FormData();
     formData.append("title", data.title);
     formData.append("content", data.content);
     formData.append("datetime", data.datetime);
+    formData.append("category", data.category);
+
     if (data.thumbnail.length > 0)
       formData.append("thumbnail", data.thumbnail[0]);
 
+    console.log("Form data:", {
+      title: data.title,
+      content: data.content,
+      datetime: data.datetime,
+      category: data.category,
+      thumbnail: data.thumbnail[0],
+    });
     try {
       await createArticle(formData);
       alert("Articles created successfully");
@@ -99,6 +119,29 @@ export const ArticleForm = () => {
           />
           {errors.title && (
             <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-semibold mb-2">
+            Category
+          </label>
+          <select
+            type="text"
+            {...register("category", { required: "Category is required" })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value={""}>Select a category</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+          {errors.title && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.category.message}
+            </p>
           )}
         </div>
 

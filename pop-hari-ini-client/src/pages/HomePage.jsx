@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Articles from "../components/contents/contentArticles/Articles";
 import { getArticles } from "../services/api";
 
-const HomePage = () => {
+export const HomePage = () => {
   const [articles, setArticles] = useState([]);
   useEffect(() => {
     const loadArticles = async () => {
@@ -30,5 +30,3 @@ const HomePage = () => {
     </div>
   );
 };
-
-export default HomePage;

@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import toast from "react-hot-toast";
+
 import {
   createCategory,
   getCategoryById,
@@ -34,6 +36,7 @@ export const CategoryForm = () => {
           reset(res.data.data);
         })
         .catch((err) => {
+          toast.error("Failed to fetch category", err);
           console.error("Failed to fetch category", err);
         });
     }
@@ -43,13 +46,14 @@ export const CategoryForm = () => {
     try {
       if (id) {
         await updateCategory(id, { name: data.name });
-        alert("Category updated successfully");
+        toast.success("Category updated successfully");
       } else {
         await createCategory({ name: data.name });
-        alert("Category created successfully");
+        toast.success("Category created successfully");
       }
       navigate("/categories");
     } catch (err) {
+      toast.error("There was an error!", err);
       console.error("There was an error!", err);
     }
   };

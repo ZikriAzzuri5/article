@@ -41,6 +41,7 @@ export const Categories = () => {
 
       setIsConfirmModalOpen(false);
     } catch (err) {
+      toast.error("Failed to delete category", err);
       console.error("Failed to delete category", err);
     }
   };
